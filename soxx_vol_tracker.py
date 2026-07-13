@@ -1,26 +1,7 @@
 """
 SOXX Volatility Tracker
 ------------------------
-Run this daily (via Windows Task Scheduler) in the 'pead' conda env:
 
-    C:\\Users\\malav\\miniconda3\\envs\\pead\\python.exe soxx_vol_tracker.py
-
-What it does each run:
-  1. Pulls 1+ year of SOXX daily closes, computes 30-day annualized
-     realized (historical) volatility, and ranks today's HV against
-     the past year of rolling HV values -> HV percentile, available
-     immediately, no warm-up period needed.
-  2. Pulls the current SOXX option chain, finds the nearest monthly
-     expiration that's 30+ days out, and averages ATM call/put
-     implied volatility -> today's IV reading.
-  3. Appends {date, close, hv_30d, hv_percentile, iv_30d} to a local
-     CSV log (soxx_vol_log.csv, created if it doesn't exist).
-  4. Once the log has enough rows (default: 20+), also computes an
-     IV percentile against the accumulated log and prints/exports it.
-     Before that, IV percentile shows as NA/insufficient history.
-
-Output: appends to soxx_vol_log.csv, and writes soxx_vol_latest.json
-for a dashboard to consume (not built yet, just the file).
 """
 
 import json
