@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crowd Gauge — Broad Market Sentiment</title>
+<style>
+  :root {
+    --paper: #f7f5f0;
+    --ink: #2a2826;
+    --ink-soft: #6b6862;
+    --fear: #3a5a78;
+    --greed: #a8432f;
+    --neutral: #8a7f63;
+    --line: #d8d3c6;
+    --accent: #c9a05a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    padding: 48px 24px 80px;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }
+
+  .eyebrow {
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .gauge-card {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dial {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+
+  .dial svg { width: 100%; height: 100%; }
+
+  .dial-readout {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dial-score {
+    font-family: "Courier New", monospace;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .dial-rating {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .gauge-text { flex: 1; }
+
+  .gauge-text p {
+    margin: 0 0 10px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .gauge-text .updated {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: "Courier New", monospace;
+  }
+
+  .trail {
+    display: flex;
+    gap: 0;
+    margin: 28px 0 36px;
+    border: 1px solid var(--line);
+  }
+
+  .trail-cell {
+    flex: 1;
+    padding: 14px 12px;
+    text-align: center;
+    border-right: 1px solid var(--line);
+  }
+
+  .trail-cell:last-child { border-right: none; }
+
+  .trail-label {
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .trail-value {
+    font-family: "Courier New", monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .components {
+    margin-bottom: 36px;
+  }
+
+  .components h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin: 0 0 14px;
+    font-family: "Courier New", monospace;
+  }
+
+  .component-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+
+  .component-name { flex: 0 0 190px; color: var(--ink); }
+
+  .component-bar-track {
+    flex: 1;
+    height: 6px;
+    background: #ebe7dc;
+    position: relative;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .component-bar-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    border-radius: 3px;
+  }
+
+  .component-rating {
+    flex: 0 0 90px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: "Courier New", monospace;
+  }
+
+  .history {
+    margin-bottom: 24px;
+  }
+
+  .history h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin: 0 0 14px;
+    font-family: "Courier New", monospace;
+  }
+
+  #chart-wrap {
+    border: 1px solid var(--line);
+    padding: 16px;
+    background: #fcfbf8;
+  }
+
+  .note {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    margin-top: 40px;
+  }
+
+  .note strong { color: var(--ink); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .empty-state code {
+    background: #ebe7dc;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+
+  .retry-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  input[type="file"] {
+    display: block;
+    margin: 16px auto 0;
+    font-family: inherit;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Weekly Check — Broad Market</p>
+    <h1>Crowd Gauge</h1>
+    <p class="subtitle">Am I crowded with the herd right now? A read on broad-market positioning extremes, sourced from CNN's Fear &amp; Greed composite (market-derived: momentum, breadth, options flow, volatility, credit, and safe-haven demand). Not a stock picker. Not the AI-exit scorecard. Just: how stretched is the room.</p>
+  </header>
+
+  <div id="content">
+    <div class="empty-state">Loading latest reading&hellip;</div>
+  </div>
+
+  <p class="note">
+    <strong>Reading this honestly:</strong> extreme greed has historically been the more
+    actionable side of this gauge, more than extreme fear is — when bulls badly outnumber bears,
+    forward six-month returns have tended to be weaker; when bears badly outnumber bulls,
+    forward returns have tended to be stronger, mechanically, because positioning that's
+    already stretched one way has less fuel left to push further that way. This is a
+    crowding gauge, not a thesis gauge — it says nothing about whether any specific
+    holding's fundamentals are sound.
+  </p>
+
+</div>
+
+<script>
+// Source of truth: sentiment_history.csv living alongside this page in the repo.
+// Relative path works both on GitHub Pages and when the file is opened directly
+// from a local clone via a simple server; it will NOT work opened via file://
+// directly (browsers block fetch() on local files), so this is built to be
+// served, not double-clicked. See setup notes.
+const CSV_PATH = "sentiment_history.csv";
+
+function ratingColor(rating) {
+  if (!rating) return "var(--neutral)";
+  const r = rating.toLowerCase();
+  if (r.includes("extreme fear") || r.includes("fear")) return "var(--fear)";
+  if (r.includes("extreme greed") || r.includes("greed")) return "var(--greed)";
+  return "var(--neutral)";
+}
+
+function r1(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return val == null ? "—" : val;
+  return (Math.round(n * 10) / 10).toString();
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",");
+  return lines.slice(1).map(line => {
+    const vals = line.split(",");
+    const row = {};
+    headers.forEach((h, i) => row[h.trim()] = vals[i] ? vals[i].trim() : "");
+    return row;
+  });
+}
+
+function drawDial(score) {
+  const angle = (score / 100) * 180 - 90;
+  const rad = (angle * Math.PI) / 180;
+  const cx = 70, cy = 70, r = 58;
+  const x = cx + r * Math.sin(rad);
+  const y = cy - r * Math.cos(rad);
+
+  let color = "var(--neutral)";
+  if (score <= 25) color = "var(--fear)";
+  else if (score >= 75) color = "var(--greed)";
+
+  return `
+    <svg viewBox="0 0 140 140">
+      <path d="M 12 70 A 58 58 0 0 1 128 70" fill="none" stroke="#ebe7dc" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 12 70 A 58 58 0 0 1 128 70" fill="none" stroke="${color}"
+            stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="${(score/100)*182} 182"/>
+      <circle cx="${x}" cy="${y}" r="5" fill="${color}"/>
+    </svg>
+  `;
+}
+
+function componentDisplayName(key) {
+  const names = {
+    market_momentum_sp500: "Momentum (S&P vs 125d MA)",
+    stock_price_strength: "Price Strength (highs/lows)",
+    stock_price_breadth: "Price Breadth (advance/decline)",
+    put_call_options: "Put/Call Options",
+    junk_bond_demand: "Junk Bond Demand",
+    market_volatility_vix: "Volatility (VIX)",
+    safe_haven_demand: "Safe Haven Demand",
+  };
+  return names[key] || key;
+}
+
+function render(rows) {
+  if (!rows.length) {
+    showError("CSV loaded but has no rows yet.");
+    return;
+  }
+  const latest = rows[rows.length - 1];
+  const score = parseFloat(latest.fear_greed_score);
+  const rating = latest.fear_greed_rating || "—";
+  const color = ratingColor(rating);
+
+  let actionLine = "Neutral-ish reading. Not at an extreme either way right now.";
+  if (score >= 75) {
+    actionLine = "Extreme greed. The crowd is leaning hard long across the broad market — worth a sanity check on position sizing generally, separate from any single-stock thesis.";
+  } else if (score <= 25) {
+    actionLine = "Extreme fear. Historically a setup for stronger forward returns, though this side of the gauge has been a noisier signal than extreme greed.";
+  }
+
+  const componentKeys = [
+    "market_momentum_sp500", "stock_price_strength", "stock_price_breadth",
+    "put_call_options", "junk_bond_demand", "market_volatility_vix", "safe_haven_demand"
+  ];
+
+  const componentsHtml = componentKeys.map(key => {
+    const s = latest[`${key}_score`];
+    const r = latest[`${key}_rating`] || "";
+    const sNum = parseFloat(s);
+    const pct = isNaN(sNum) ? 50 : Math.max(0, Math.min(100, sNum));
+    const barColor = ratingColor(r);
+    return `
+      <div class="component-row">
+        <div class="component-name">${componentDisplayName(key)}</div>
+        <div class="component-bar-track">
+          <div class="component-bar-fill" style="width:${pct}%; background:${barColor};"></div>
+        </div>
+        <div class="component-rating">${r || "—"}</div>
+      </div>
+    `;
+  }).join("");
+
+  const html = `
+    <div class="gauge-card">
+      <div class="dial">
+        ${drawDial(isNaN(score) ? 50 : score)}
+        <div class="dial-readout">
+          <div class="dial-score" style="color:${color}">${isNaN(score) ? "—" : r1(score)}</div>
+          <div class="dial-rating">${rating}</div>
+        </div>
+      </div>
+      <div class="gauge-text">
+        <p>${actionLine}</p>
+        <div class="updated">as of ${latest.date}</div>
+      </div>
+    </div>
+
+    <div class="trail">
+      <div class="trail-cell">
+        <div class="trail-label">1 week ago</div>
+        <div class="trail-value">${r1(latest.previous_1_week)}</div>
+      </div>
+      <div class="trail-cell">
+        <div class="trail-label">1 month ago</div>
+        <div class="trail-value">${r1(latest.previous_1_month)}</div>
+      </div>
+      <div class="trail-cell">
+        <div class="trail-label">1 year ago</div>
+        <div class="trail-value">${r1(latest.previous_1_year)}</div>
+      </div>
+    </div>
+
+    <div class="components">
+      <h2>What's driving the reading</h2>
+      ${componentsHtml}
+    </div>
+
+    <div class="history">
+      <h2>History (${rows.length} reading${rows.length === 1 ? "" : "s"})</h2>
+      <div id="chart-wrap">
+        ${drawHistoryChart(rows)}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("content").innerHTML = html;
+}
+
+function drawHistoryChart(rows) {
+  const w = 680, h = 180, pad = 24;
+  const scores = rows.map(r => parseFloat(r.fear_greed_score)).filter(s => !isNaN(s));
+  if (!scores.length) return "<p style='color:var(--ink-soft); font-size:13px;'>Not enough data yet.</p>";
+
+  const points = rows.map((r, i) => {
+    const s = parseFloat(r.fear_greed_score);
+    const x = pad + (i / Math.max(1, rows.length - 1)) * (w - pad * 2);
+    const y = pad + (1 - (isNaN(s) ? 0.5 : s / 100)) * (h - pad * 2);
+    return { x, y, s, date: r.date };
+  });
+
+  const pathD = points.map((p, i) => (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+
+  const dots = points.map(p => {
+    let c = "var(--neutral)";
+    if (p.s >= 75) c = "var(--greed)";
+    else if (p.s <= 25) c = "var(--fear)";
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${c}"/>`;
+  }).join("");
+
+  const yMid = pad + (1 - 0.5) * (h - pad * 2);
+  const y75 = pad + (1 - 0.75) * (h - pad * 2);
+  const y25 = pad + (1 - 0.25) * (h - pad * 2);
+
+  return `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto;">
+      <line x1="${pad}" y1="${y75}" x2="${w-pad}" y2="${y75}" stroke="#ebe7dc" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${pad}" y1="${yMid}" x2="${w-pad}" y2="${yMid}" stroke="#ebe7dc" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${pad}" y1="${y25}" x2="${w-pad}" y2="${y25}" stroke="#ebe7dc" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="${w-pad}" y="${y75-4}" text-anchor="end" font-size="9" fill="#8a7f63" font-family="Courier New, monospace">75 (greed)</text>
+      <text x="${w-pad}" y="${y25-4}" text-anchor="end" font-size="9" fill="#8a7f63" font-family="Courier New, monospace">25 (fear)</text>
+      <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+      ${dots}
+    </svg>
+  `;
+}
+
+function showError(message) {
+  document.getElementById("content").innerHTML = `
+    <div class="empty-state">
+      Couldn't load <code>${CSV_PATH}</code>.<br>${message}
+      <br><button class="retry-btn" onclick="loadData()">Retry</button>
+    </div>
+  `;
+}
+
+function loadData() {
+  document.getElementById("content").innerHTML = '<div class="empty-state">Loading latest reading&hellip;</div>';
+  // Cache-bust so GitHub Pages / browser caching doesn't show a stale reading
+  // after this week's Actions run updates the CSV.
+  fetch(CSV_PATH + "?t=" + Date.now())
+    .then(resp => {
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      return resp.text();
+    })
+    .then(text => render(parseCSV(text)))
+    .catch(err => showError(err.message + " — if you're opening this file directly (file://) rather than via a served URL, browsers block that fetch; see setup notes."));
+}
+
+loadData();
+</script>
+</body>
+</html>
