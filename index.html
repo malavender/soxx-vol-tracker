@@ -5,14 +5,16 @@
 <title>Crowd Gauge — Broad Market Sentiment</title>
 <style>
   :root {
-    --paper: #f7f5f0;
-    --ink: #2a2826;
-    --ink-soft: #6b6862;
-    --fear: #3a5a78;
-    --greed: #a8432f;
-    --neutral: #8a7f63;
-    --line: #d8d3c6;
-    --accent: #c9a05a;
+    --paper: #1a1917;
+    --ink: #ece8e0;
+    --ink-soft: #a19a8c;
+    --fear: #6a9bcc;
+    --greed: #d97a52;
+    --neutral: #b3a67e;
+    --line: #38352e;
+    --accent: #d9b268;
+    --panel: #221f1b;
+    --track: #322f29;
   }
 
   * { box-sizing: border-box; }
@@ -170,7 +172,7 @@
   .component-bar-track {
     flex: 1;
     height: 6px;
-    background: #ebe7dc;
+    background: var(--track);
     position: relative;
     border-radius: 3px;
     overflow: hidden;
@@ -207,7 +209,7 @@
   #chart-wrap {
     border: 1px solid var(--line);
     padding: 16px;
-    background: #fcfbf8;
+    background: var(--panel);
   }
 
   .note {
@@ -230,7 +232,7 @@
   }
 
   .empty-state code {
-    background: #ebe7dc;
+    background: var(--track);
     padding: 2px 6px;
     border-radius: 3px;
     font-size: 13px;
@@ -328,7 +330,7 @@ function drawDial(score) {
 
   return `
     <svg viewBox="0 0 140 140">
-      <path d="M 12 70 A 58 58 0 0 1 128 70" fill="none" stroke="#ebe7dc" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 12 70 A 58 58 0 0 1 128 70" fill="none" stroke="#322f29" stroke-width="10" stroke-linecap="round"/>
       <path d="M 12 70 A 58 58 0 0 1 128 70" fill="none" stroke="${color}"
             stroke-width="10" stroke-linecap="round"
             stroke-dasharray="${(score/100)*182} 182"/>
@@ -462,11 +464,11 @@ function drawHistoryChart(rows) {
 
   return `
     <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto;">
-      <line x1="${pad}" y1="${y75}" x2="${w-pad}" y2="${y75}" stroke="#ebe7dc" stroke-width="1" stroke-dasharray="3,3"/>
-      <line x1="${pad}" y1="${yMid}" x2="${w-pad}" y2="${yMid}" stroke="#ebe7dc" stroke-width="1" stroke-dasharray="3,3"/>
-      <line x1="${pad}" y1="${y25}" x2="${w-pad}" y2="${y25}" stroke="#ebe7dc" stroke-width="1" stroke-dasharray="3,3"/>
-      <text x="${w-pad}" y="${y75-4}" text-anchor="end" font-size="9" fill="#8a7f63" font-family="Courier New, monospace">75 (greed)</text>
-      <text x="${w-pad}" y="${y25-4}" text-anchor="end" font-size="9" fill="#8a7f63" font-family="Courier New, monospace">25 (fear)</text>
+      <line x1="${pad}" y1="${y75}" x2="${w-pad}" y2="${y75}" stroke="#38352e" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${pad}" y1="${yMid}" x2="${w-pad}" y2="${yMid}" stroke="#38352e" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="${pad}" y1="${y25}" x2="${w-pad}" y2="${y25}" stroke="#38352e" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="${w-pad}" y="${y75-4}" text-anchor="end" font-size="9" fill="#a19a8c" font-family="Courier New, monospace">75 (greed)</text>
+      <text x="${w-pad}" y="${y25-4}" text-anchor="end" font-size="9" fill="#a19a8c" font-family="Courier New, monospace">25 (fear)</text>
       <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
       ${dots}
     </svg>
