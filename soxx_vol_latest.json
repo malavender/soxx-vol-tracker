@@ -1,10 +1,10 @@
 {
-  "date": "2026-08-10",
-  "close": 529.39,
-  "hv_30d_pct": 62.53,
-  "hv_percentile": 80.8,
-  "iv_30d_pct": 50.57,
+  "date": "2026-08-12",
+  "close": 546.61,
+  "hv_30d_pct": 60.23,
+  "hv_percentile": 80.0,
+  "iv_30d_pct": 46.08,
   "iv_percentile": null,
-  "iv_percentile_status": "building history (13/20 days logged)",
-  "log_rows": 13
+  "iv_percentile_status": "building history (14/20 days logged)",
+  "log_rows": 14
 }
