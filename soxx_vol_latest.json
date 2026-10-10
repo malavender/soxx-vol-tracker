@@ -1,10 +1,10 @@
 {
-  "date": "2026-10-08",
+  "date": "2026-10-10",
   "close": NaN,
-  "hv_30d_pct": 34.4,
-  "hv_percentile": 37.5,
-  "iv_30d_pct": 39.34,
-  "iv_percentile": 2.7,
+  "hv_30d_pct": 36.32,
+  "hv_percentile": 48.5,
+  "iv_30d_pct": 40.29,
+  "iv_percentile": 15.8,
   "iv_percentile_status": "ready",
-  "log_rows": 37
+  "log_rows": 38
 }
